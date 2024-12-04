@@ -1,0 +1,161 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class NoticeBoardAWT extends Frame implements ActionListener {
+    static class Notice {
+        String message;
+
+        public Notice(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            return message;
+        }
+    }
+
+    static ArrayList<Notice> notices = new ArrayList<>();
+
+    // Components
+    TextField messageField;
+    Button postButton, updateButton, deleteButton, viewButton, exitButton;
+    List noticeList; // For selecting notices to update or delete
+
+    // Constructor
+    public NoticeBoardAWT() {
+        setTitle("Digital Notice Board");
+        setSize(500, 400);
+        setLayout(new FlowLayout());
+
+        Label messageLabel = new Label("Enter Notice:");
+        messageField = new TextField(30);
+
+        postButton = new Button("Post Notice");
+        updateButton = new Button("Update Selected Notice");
+        deleteButton = new Button("Delete Selected Notice");
+        viewButton = new Button("View Notices");
+        exitButton = new Button("Exit");
+
+        noticeList = new List(10, false); // Single-select list
+
+        add(messageLabel);
+        add(messageField);
+        add(postButton);
+        add(updateButton);
+        add(deleteButton);
+        add(viewButton);
+        add(exitButton);
+        add(noticeList);
+
+        postButton.addActionListener(this);
+        updateButton.addActionListener(this);
+        deleteButton.addActionListener(this);
+        viewButton.addActionListener(this);
+        exitButton.addActionListener(this);
+
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == postButton) {
+            postNotice();
+        } else if (e.getSource() == updateButton) {
+            updateNotice();
+        } else if (e.getSource() == deleteButton) {
+            deleteNotice();
+        } else if (e.getSource() == viewButton) {
+            viewNoticesWindow();
+        } else if (e.getSource() == exitButton) {
+            System.exit(0);
+        }
+    }
+
+    private void postNotice() {
+        String message = messageField.getText().trim();
+        if (!message.isEmpty()) {
+            notices.add(new Notice(message));
+            noticeList.add(message);
+            messageField.setText("");
+            showMessageDialog("Notice posted successfully!");
+        } else {
+            showMessageDialog("Please enter a valid message.");
+        }
+    }
+
+    private void updateNotice() {
+        int selectedIndex = noticeList.getSelectedIndex();
+        if (selectedIndex == -1) {
+            showMessageDialog("Please select a notice to update.");
+            return;
+        }
+
+        String newMessage = messageField.getText().trim();
+        if (!newMessage.isEmpty()) {
+            notices.get(selectedIndex).message = newMessage;
+            noticeList.replaceItem(newMessage, selectedIndex);
+            messageField.setText("");
+            showMessageDialog("Notice updated successfully!");
+        } else {
+            showMessageDialog("Please enter a valid message.");
+        }
+    }
+
+    private void deleteNotice() {
+        int selectedIndex = noticeList.getSelectedIndex();
+        if (selectedIndex == -1) {
+            showMessageDialog("Please select a notice to delete.");
+            return;
+        }
+
+        notices.remove(selectedIndex);
+        noticeList.remove(selectedIndex);
+        showMessageDialog("Notice deleted successfully!");
+    }
+
+    private void viewNoticesWindow() {
+        Frame viewFrame = new Frame("View Notices");
+        viewFrame.setSize(400, 300);
+        viewFrame.setLayout(new FlowLayout());
+
+        TextArea displayArea = new TextArea(10, 40);
+        displayArea.setEditable(false);
+
+        if (notices.isEmpty()) {
+            displayArea.setText("No notices to display.");
+        } else {
+            StringBuilder sb = new StringBuilder("Current Notices:\n");
+            for (Notice notice : notices) {
+                sb.append("- ").append(notice).append("\n");
+            }
+            displayArea.setText(sb.toString());
+        }
+
+        Button closeButton = new Button("Close");
+        closeButton.addActionListener(e -> viewFrame.dispose());
+
+        viewFrame.add(displayArea);
+        viewFrame.add(closeButton);
+        viewFrame.setVisible(true);
+    }
+
+    private void showMessageDialog(String message) {
+        Dialog dialog = new Dialog(this, "Message", true);
+        dialog.setSize(300, 100);
+        dialog.setLayout(new FlowLayout());
+
+        Label label = new Label(message);
+        Button okButton = new Button("OK");
+        okButton.addActionListener(e -> dialog.dispose());
+
+        dialog.add(label);
+        dialog.add(okButton);
+        dialog.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        new NoticeBoardAWT();
+    }
+}
